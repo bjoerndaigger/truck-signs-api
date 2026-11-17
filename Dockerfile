@@ -1,12 +1,16 @@
-FROM python:2.12
+FROM python:3.12.16-slim-bookworm
 
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install
+RUN pip install -r requirements.txt
 
 COPY . /app
 
-EXPOSE
+RUN chmod +x /app/entrypoint.sh
 
-ENTRYPOINT ["entrypoint.sh"]
+WORKDIR /app/src
+
+EXPOSE 8020
+
+ENTRYPOINT ["/app/entrypoint.sh"]
