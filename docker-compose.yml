@@ -1,14 +1,17 @@
 services:
   db:
-    image: postgres:7-alpine
+    image: postgres:18.7-alpine
     container_name: tsa_db
+    restart: unless-stopped
     env_file: .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     networks:
       - tsa-network
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test:
         [
@@ -20,29 +23,28 @@ services:
       retries: 5
 
   backend:
-    build: .
+    image: truck-signs-api:v2
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: tsa_backend
-    command: gunicorn tsa_app.wsgi:application --bind 0.0.0.0:8000 --workers 4
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - '8020:8020'
     networks:
       - tsa-network
-    environment:
-      MODE: prod
-      DEBUG_ENABLED: 'False'
-      DB_NAME: trucksigns_db
-      DB_USER: trucksigns_user
-      DB_PASSWORD: supertrucksignsuser!
-      DB_HOST: tsa_db
-      DB_PORT: 5432
-      ALLOWED_HOSTS: localhost,127.0.0.1,tsa-web
     volumes:
-      - ./src/staticfiles:/app/src/staticfiles
-      - ./src/media:/app/src/media
+      # Stores uploaded media files (MEDIA_ROOT in settings.py) in a named volume.
+      # Without it, uploaded files would be lost when the container is removed.
+      - media_data:/app/src/mediafiles
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   postgres_data:
+  media_data:
 
 networks:
   tsa-network:
