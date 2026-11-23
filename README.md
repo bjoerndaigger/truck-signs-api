@@ -138,7 +138,7 @@ How the start works (`entrypoint.sh`):
 
 How to change the result:
 
-- **Other host port:** change `'8020:8020'` in `docker-compose.yml`, for example `'9000:8020'`. The app is then available on port `9000`.
+- **Other host port:** set `BACKEND_PORT=9000` in your `.env` file (default `8020`). The app is then available on port `9000`. The container itself always listens on `8020`.
 - **Other number of gunicorn workers:** change `--workers 4` in the last line of `entrypoint.sh`, then rebuild with `docker compose up -d --build`.
 - **Other PostgreSQL version:** change the image tag of the `db` service. Use a fixed tag, not `latest`.
 - **Access from a server:** add its IP or domain to `ALLOWED_HOSTS` in the `.env` file.
